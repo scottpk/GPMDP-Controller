@@ -3,22 +3,7 @@ A simple application to control Google Play Music Desktop Player using an Xbox c
 This project is currently very, VERY early stages but works using GPMDP's JSON API.
 
 # Controller Mappings
-At present the controller mappings can't be changed without modifying the code. Also many of the buttons are just mapped to Play/Pause. Both of these are things which will be addressed in the near future.
-The controller is mapped as follows:
-<pre>
-Xbox Button (doesn't seem to work) - Play/Pause
-             Back - Play/Pause
-            Start - Play/Pause
-                A - Play/Pause
-                B - Toggle Repeat
-                X - Toggle Shuffle
-                Y - Play/Pause
-          DPad Up - Volume Up
-        DPad Down - Volume Down
-        DPad Left - Back (once to go to the beginning of the song, twice to go back a song)
-       DPad Right - Forward to the next song
- Left Stick Press - Play/Pause
-Right Stick Press - Play/Pause
-    Left Shoulder - Toggle Thumbs Down
-   Right Shoulder - Toggle Thumbs Up
-</pre>
+There is now a UI for mapping the buttons to different functions. The Settings window will show when you start the program, and you can map the buttons however you'd like. Changes will take effect as soon as you press "Save". Please note that the Xbox/Guide Button does not work. If you prefer you can also change the mappings inside App.config; however, these changes will not take effect until the application is restarted.
+
+# The UI
+The UI for this is very simple. The Settings window will show when you launch the application. Use the dropdowns to remap a button; press "Save" to commit your changes. Close the window to hide it. You can bring this up again by either double-clicking the tray icon, or by right-clicking the tray icon and choosing to show the window.
