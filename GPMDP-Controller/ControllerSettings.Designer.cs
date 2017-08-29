@@ -1,6 +1,6 @@
 ﻿namespace GPMDP_Controller
 {
-  partial class ControllerSettings
+  partial class ControllerSettingsGUI
   {
     /// <summary>
     /// Required designer variable.
@@ -29,7 +29,7 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ControllerSettings));
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ControllerSettingsGUI));
       this.lblLeftShoulder = new System.Windows.Forms.Label();
       this.lblRightShoulder = new System.Windows.Forms.Label();
       this.lblDPadUp = new System.Windows.Forms.Label();
@@ -353,7 +353,6 @@
             this.tsmiExit});
       this.gpmcContextMenuStrip.Name = "contextMenuStrip1";
       this.gpmcContextMenuStrip.Size = new System.Drawing.Size(336, 112);
-      this.gpmcContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.gpmcContextMenuStrip_Opening);
       // 
       // tsmiShowWindow
       // 
@@ -384,7 +383,7 @@
       this.pictureBox1.TabIndex = 31;
       this.pictureBox1.TabStop = false;
       // 
-      // ControllerSettings
+      // ControllerSettingsGUI
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -422,12 +421,13 @@
       this.Controls.Add(this.lblRightShoulder);
       this.Controls.Add(this.lblLeftShoulder);
       this.Controls.Add(this.pictureBox1);
+      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MaximizeBox = false;
       this.MinimizeBox = false;
-      this.Name = "ControllerSettings";
+      this.Name = "ControllerSettingsGUI";
       this.ShowInTaskbar = false;
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "ControllerSettings";
+      this.Text = "ControllerSettingsGUI";
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ControllerSettings_FormClosing);
       this.gpmcContextMenuStrip.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace GPMDP_Controller
 {
-  public partial class ControllerSettings : Form, ControllerUserInterface
+  partial class ControllerSettingsGUI : Form
   {
-    private XboxControls xc;
+    //private XboxControls xc;
     private bool _messageShown;
-    public ControllerSettings(XboxControls xc)
+    private OnSaveDelegate _onSave;
+    public ControllerSettingsGUI(OnSaveDelegate onSave)
     {
+      _onSave = onSave;
       InitializeComponent();
-      this.xc = xc;
+      //this.xc = xc;
       Dictionary<string, string> vals = new Dictionary<string, string>
       {
         {"PLAY_PAUSE","Play/Pause" },
@@ -53,10 +56,6 @@ namespace GPMDP_Controller
       gpmcNotifyIcon.Visible = true;
     }
 
-    private void ControllerSettings_Load(object sender, EventArgs e)
-    {
-    }
-
     public string GetAuthCode()
     {
       Form prompt = new Form()
@@ -89,29 +88,49 @@ namespace GPMDP_Controller
 
     private void btnSave_Click(object sender, EventArgs e)
     {
-      // Open App.Config of executable
-      Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+      //// Open App.Config of executable
+      //Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-      foreach (ComboBox cb in Controls.OfType<ComboBox>())
+      //foreach (ComboBox cb in Controls.OfType<ComboBox>())
+      //{
+      //  string appKey = cb.Name.Replace("cb", "") + "Mapping";
+      //  string value = ((KeyValuePair<string, string>)cb.SelectedItem).Key;
+
+      //  if (ConfigurationManager.AppSettings[appKey] == null)
+      //  {
+      //    config.AppSettings.Settings.Add(appKey, value);
+      //  }
+      //  else
+      //  {
+      //    config.AppSettings.Settings.Remove(appKey);
+      //    config.AppSettings.Settings.Add(appKey, value);
+      //  }
+      //}
+
+      //config.Save(ConfigurationSaveMode.Modified);
+      //ConfigurationManager.RefreshSection("appSettings");
+
+      ////xc.LoadMappings();
+      //_onSave(config.AppSettings.Settings);
+
+      KeyValueConfigurationCollection cc = new KeyValueConfigurationCollection();
+      foreach(ComboBox cb in Controls.OfType<ComboBox>())
       {
         string appKey = cb.Name.Replace("cb", "") + "Mapping";
         string value = ((KeyValuePair<string, string>)cb.SelectedItem).Key;
 
-        if (ConfigurationManager.AppSettings[appKey] == null)
+        if (cc[appKey] == null)
         {
-          config.AppSettings.Settings.Add(appKey, value);
+          cc.Add(appKey, value);
         }
         else
         {
-          config.AppSettings.Settings.Remove(appKey);
-          config.AppSettings.Settings.Add(appKey, value);
+          cc.Remove(appKey);
+          cc.Add(appKey, value);
         }
       }
 
-      config.Save(ConfigurationSaveMode.Modified);
-      ConfigurationManager.RefreshSection("appSettings");
-
-      xc.LoadMappings();
+      _onSave(cc);
     }
 
     private void ControllerSettings_FormClosing(object sender, FormClosingEventArgs e)
@@ -131,14 +150,32 @@ namespace GPMDP_Controller
       Show();
     }
 
-    private void gpmcContextMenuStrip_Opening(object sender, CancelEventArgs e)
-    {
-
-    }
-
     public void Start()
     {
       Application.Run(this);
+    }
+  }
+  public class ControllerSettings : ControllerUserInterface {
+    private ControllerSettingsGUI gui;
+    private Thread t;
+    public override bool isRunning { get { return t.IsAlive; } }
+    public ControllerSettings(OnSaveDelegate onSave)
+      : base(onSave: onSave)
+    {
+      t = new Thread(new ThreadStart(() => {
+        this.gui = new ControllerSettingsGUI(onSave);
+        gui.Start();
+      }));
+      t.Start();
+    }
+    public override string GetAuthCode()
+    {
+      return gui.GetAuthCode();
+    }
+    public override void Start()
+    {
+      //Thread t = new Thread(new ThreadStart(() => { gui.Start(); }));
+      //gui.Start();
     }
   }
 }
