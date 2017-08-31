@@ -64,6 +64,7 @@
       <DependentUpon>ControllerSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="ControllerUserInterface.cs" />
+    <Compile Include="GameController.cs" />
     <Compile Include="GPMDPControllerResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -87,6 +88,7 @@
     <EmbeddedResource Include="GPMDPControllerResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>GPMDPControllerResources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

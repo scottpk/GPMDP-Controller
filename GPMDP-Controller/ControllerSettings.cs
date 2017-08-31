@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GPMDP_Controller
@@ -88,31 +89,6 @@ namespace GPMDP_Controller
 
     private void btnSave_Click(object sender, EventArgs e)
     {
-      //// Open App.Config of executable
-      //Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-      //foreach (ComboBox cb in Controls.OfType<ComboBox>())
-      //{
-      //  string appKey = cb.Name.Replace("cb", "") + "Mapping";
-      //  string value = ((KeyValuePair<string, string>)cb.SelectedItem).Key;
-
-      //  if (ConfigurationManager.AppSettings[appKey] == null)
-      //  {
-      //    config.AppSettings.Settings.Add(appKey, value);
-      //  }
-      //  else
-      //  {
-      //    config.AppSettings.Settings.Remove(appKey);
-      //    config.AppSettings.Settings.Add(appKey, value);
-      //  }
-      //}
-
-      //config.Save(ConfigurationSaveMode.Modified);
-      //ConfigurationManager.RefreshSection("appSettings");
-
-      ////xc.LoadMappings();
-      //_onSave(config.AppSettings.Settings);
-
       KeyValueConfigurationCollection cc = new KeyValueConfigurationCollection();
       foreach(ComboBox cb in Controls.OfType<ComboBox>())
       {
@@ -168,9 +144,9 @@ namespace GPMDP_Controller
       }));
       t.Start();
     }
-    public override string GetAuthCode()
+    public override async Task<string> GetAuthCode()
     {
-      return gui.GetAuthCode();
+      return await Task<string>.Run(() => { return gui.GetAuthCode(); });
     }
     public override void Start()
     {

@@ -5,10 +5,12 @@ using System.Linq;
 using System.IO;
 using System.Configuration;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GPMDP_Controller
 {
   public delegate string GetCodeDelegate();
+  public delegate void GetAttentionDelegate();
   class Program
   {
     static ControllerUserInterface cs;
@@ -16,29 +18,56 @@ namespace GPMDP_Controller
     static void Main(string[] args)
     {
       StartIfNotRunning();
-
-      //XboxControls xc = null;
+      
       OnSaveDelegate onSave = Save;
       cs = new ControllerSettings(onSave);
 
-      while (cs == null)
-      {
-        Thread.Sleep(10);
-      }
+      //while (cs == null)
+      //{
+      //  Thread.Sleep(10);
+      //}
 
-      xc = new XboxControls(cs);
+      //WebSocketController wsc = new WebSocketController(cs.GetAuthCode);
+      WebSocketController wsc = new WebSocketController(GetAuthCode);
 
-      Thread t3 = new Thread(new ThreadStart(() =>
+      xc = new XboxControls(wsc, cs);
+
+      wsc.Connect();
+
+      //Thread t3 = new Thread(new ThreadStart(() =>
+      //{
+      //  while (cs.isRunning)
+      //  {
+      //    xc.CheckInput();
+      //    Thread.Sleep(1);
+      //  }
+      //}));
+      //t3.Start();
+
+      //t3.Join();
+      xc.ThreadStart();
+    }
+
+    private static string GetAuthCode()
+    {
+      string result = "";
+      Task<int> controllerInputTask = xc.GetNumbers();
+      Task<string> uiInputTask = cs.GetAuthCode();
+      while (!controllerInputTask.IsCompleted)
       {
-        while (cs.isRunning)
+        if (uiInputTask.IsCompleted)
         {
-          xc.CheckInput();
-          Thread.Sleep(1);
+          result = uiInputTask.Result;
+          break;
         }
-      }));
-      t3.Start();
-
-      t3.Join();
+        //result = cs.GetAuthCode();
+        //break;
+      }
+      if (controllerInputTask.IsCompleted)
+      {
+        result = controllerInputTask.Result.ToString();
+      }
+      return result;
     }
 
     private static void Save(KeyValueConfigurationCollection kvcc)

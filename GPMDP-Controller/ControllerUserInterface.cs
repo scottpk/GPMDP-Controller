@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Threading.Tasks;
 
 namespace GPMDP_Controller
 {
@@ -11,7 +12,11 @@ namespace GPMDP_Controller
     {
       _onSave = onSave;
     }
-    public abstract string GetAuthCode();
+    //public abstract string GetAuthCode();
+    public virtual async Task<string> GetAuthCode()
+    {
+      throw new System.NotImplementedException();
+    }
     public abstract void Start();
     public void Save(KeyValueConfigurationCollection kvcc)
     {

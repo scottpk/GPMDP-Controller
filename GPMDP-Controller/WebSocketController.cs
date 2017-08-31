@@ -45,20 +45,27 @@ namespace GPMDP_Controller
       }
     }
 
-    public WebSocketController(ControllerUserInterface ui, XboxControls xc, string host = "localhost", int port = 5672, string scheme = "ws")
+    public WebSocketController(GetCodeDelegate getCode, string host = "localhost", int port = 5672, string scheme = "ws")
     {
       UriBuilder builder = new UriBuilder();
       builder.Host = host;
       builder.Port = port;
       builder.Scheme = scheme;
       wsUri = builder.Uri;
-      this.getCode = delegate () { xc.Attention(); return ui.GetAuthCode(); };
+      this.getCode = delegate () {
+        GameController.Attention();
+        return getCode();
+      };
+    }
+    
+    public void Connect()
+    {
       ws.ConnectAsync(wsUri, CancellationToken.None);
 
       // wait until a connection is established
       while (ws.State == WebSocketState.Connecting)
       {
-        Thread.Sleep(100);
+        Thread.Sleep(1);
         if (ws.State == WebSocketState.Closed)
         {
           ws = new ClientWebSocket();
@@ -78,6 +85,7 @@ namespace GPMDP_Controller
       DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(SocketResponse));
       ms.Position = 0;
       response = (SocketResponse)ser.ReadObject(ms);
+
       while (authCode == "")
       {
         if (response.channel == "connect")

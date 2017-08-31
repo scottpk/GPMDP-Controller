@@ -2,45 +2,32 @@
 using Microsoft.Xna.Framework.Input;
 using System.Configuration;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace GPMDP_Controller
 {
   /// <summary>
   /// This class is for the Xbox controller
   /// </summary>
-  public class XboxControls
+  public class XboxControls : GameController
   {
-    private delegate void ButtonDelegate();
     private int playerIndex = -1;
-    GamePadState prevState = new GamePadState();
-    WebSocketController wsc;
     ButtonDelegate Big, Back, Start, A, B, X, Y, DpadUp, DpadDown, DpadLeft, DpadRight, LStick, RStick, LShoulder, RShoulder;
 
     /// <summary>
-    /// Instantiator method. This is probably better way to do this.
+    /// Instantiator method. The UI is being passed so we can see when it exits, and also so we can pass it to the WebSocketController
+    /// which will use it to request input when GPMDP asks for the user's code. There is probably a better way to do this.
     /// </summary>
-    /// <param name="ui">the UI that is being used - this is passed so we can get the authentication code GPMDP is displaying when needed</param>
-    public XboxControls(ControllerUserInterface ui)
+    /// <param name="ui">the UI that is being used</param>
+    public XboxControls(WebSocketController wsc, ControllerUserInterface ui) : base(wsc, ui)
     {
-      this.wsc = new WebSocketController(ui, this);
-      LoadMappings();
-    }
-
-    private void PlayPause()
-    {
-      wsc.SendRequest("playback", "playPause");
-      if (playerIndex > -1)
-      {
-        GamePad.SetVibration(playerIndex, 0.0f, 1.0f);
-        Thread.Sleep(50);
-        GamePad.SetVibration(playerIndex, 0.0f, 0.0f);
-      }
     }
 
     /// <summary>
     /// Run through each delegate, and map it using Map(delegate,string)
     /// </summary>
-    public void LoadMappings()
+    public override void LoadMappings()
     {
       Map(ref Big,        ConfigurationManager.AppSettings["BigButtonMapping"]);
       Map(ref Back,       ConfigurationManager.AppSettings["BackButtonMapping"]);
@@ -60,59 +47,11 @@ namespace GPMDP_Controller
     }
 
     /// <summary>
-    /// Map a given delegate
-    /// </summary>
-    /// <param name="del">the delegate to set</param>
-    /// <param name="function">the function which the delegate will perform</param>
-    private void Map(ref ButtonDelegate del, string function)
-    {
-      if (function != null)
-      {
-        switch (function.ToUpperInvariant())
-        {
-          case "PLAY_PAUSE":
-            del = delegate () { PlayPause(); };
-            break;
-          case "TOGGLE_REPEAT":
-            del = delegate () { wsc.SendRequest("playback", "toggleRepeat" ); };
-            break;
-          case "TOGGLE_SHUFFLE":
-            del = delegate () { wsc.SendRequest("playback", "toggleShuffle"); };
-            break;
-          case "INCREASE_VOLUME":
-            del = delegate () { wsc.SendRequest("volume", "increaseVolume"); };
-            break;
-          case "DECREASE_VOLUME":
-            del = delegate () { wsc.SendRequest("volume", "decreaseVolume"); };
-            break;
-          case "BACK":
-            del = delegate () { wsc.SendRequest("playback", "rewind"); };
-            break;
-          case "FORWARD":
-            del = delegate () { wsc.SendRequest("playback", "forward"); };
-            break;
-          case "TOGGLE_THUMBS_UP":
-            del = delegate () { wsc.SendRequest("rating", "toggleThumbsUp"); };
-            break;
-          case "TOGGLE_THUMBS_DOWN":
-            del = delegate () { wsc.SendRequest("rating", "toggleThumbsDown"); };
-            break;
-          default: del = delegate () { PlayPause(); };
-            break;
-        }
-      }
-      else
-      {
-        del = delegate () { PlayPause(); };
-      }
-    }
-
-    /// <summary>
     /// This is the "main piece" which will look for the first connected controller, and call delegates corresponding to which buttons
     /// have been pressed. This is designed to verify that the button was previously released, so that holding down the button does not
     /// cause the same command to be sent repeatedly.
     /// </summary>
-    public void CheckInput()
+    public override void CheckInput()
     {
       for (int i = 0; i < GamePad.MaximumGamePadCount; i++)
       {
@@ -188,33 +127,75 @@ namespace GPMDP_Controller
       }
     }
 
-    public void Attention()
+    public override void Pulse()
     {
-      List<Thread> threadlist = new List<Thread>();
+      if (playerIndex > -1)
+      {
+        GamePad.SetVibration(playerIndex, 0.0f, 1.0f);
+        Thread.Sleep(50);
+        GamePad.SetVibration(playerIndex, 0.0f, 0.0f);
+      }
+    }
+
+    public override async Task<int> GetNumbers()
+    {
+      return await Task<int>.Run(() => { return GetNumbersNonAsync(); });
+    }
+
+    private int GetNumbersNonAsync()
+    {
+      List<double[]> sectionList = new List<double[]>();
+      double lastDbl = -(System.Math.PI);
+      double sectionSize = System.Math.PI / 2.5;
+      for (int i = 0; i < 5; i++)
+      {
+        double[] dbl = new double[] { lastDbl, 0.0 };
+        lastDbl += sectionSize;
+        dbl[1] = lastDbl;
+        sectionList.Add(dbl);
+      }
+      double[][] sectionArray = sectionList.ToArray();
+      string val = "";
+      GamePadState gps = new GamePadState();
+
       for (int i = 0; i < GamePad.MaximumGamePadCount; i++)
       {
-        if (GamePad.GetState(i).IsConnected)
-        {
-          int j = i;
-          threadlist.Add(new Thread(new ThreadStart(() => { 
-          GamePad.SetVibration(j, 0.0f, 1.0f);
-          Thread.Sleep(200);
-          GamePad.SetVibration(j, 0.0f, 0.0f);
-          Thread.Sleep(200);
-          GamePad.SetVibration(j, 0.0f, 1.0f);
-          Thread.Sleep(200);
-          GamePad.SetVibration(j, 0.0f, 0.0f);
-          Thread.Sleep(200);
-          GamePad.SetVibration(j, 0.0f, 1.0f);
-          Thread.Sleep(200);
-          GamePad.SetVibration(j, 0.0f, 0.0f);
-          })));
-        }
+        gps = GamePad.GetState(i);
+        playerIndex = i;
+        //prevState = gps;
+        i = GamePad.MaximumGamePadCount;// only look at one controller
       }
-      foreach(Thread t in threadlist)
+
+      float x = gps.ThumbSticks.Left.X;
+      float y = gps.ThumbSticks.Left.Y;
+      while (gps.Triggers.Left < .5f)
       {
-        t.Start();
+        x = gps.ThumbSticks.Left.X;
+        y = gps.ThumbSticks.Left.Y;
+
+        if (Math.Abs(x) > 0.5f || Math.Abs(y) > 0.5f)
+        {
+          double angle = System.Math.Atan2(gps.ThumbSticks.Left.Y, gps.ThumbSticks.Left.X);
+          //// zone 1 = all the way to the left, slightly up
+          //if (angle > )
+          int zone = 0;
+          //for (int i = 0; (sectionSize * (double) i) < System.Math.PI * 2.0; i++)
+          for (int i = 0; i < sectionArray.Length; i++)
+          {
+            double sectionLimit1 = sectionArray[i][0];
+            double sectionLimit2 = sectionArray[i][1];
+            if (((angle >= sectionLimit1) && (angle <= sectionLimit2)) || ((angle <= sectionLimit1) && (angle >= sectionLimit2)))
+            {
+              zone = i;
+              break;
+            }
+          }
+          zone = (gps.Triggers.Right < .5f) ? zone + 5 : zone;
+        }
+        gps = GamePad.GetState(playerIndex);
       }
+
+      return int.Parse(val);
     }
   }
 }
