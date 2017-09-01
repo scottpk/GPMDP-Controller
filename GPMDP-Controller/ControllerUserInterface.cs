@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GPMDP_Controller
@@ -13,7 +14,7 @@ namespace GPMDP_Controller
       _onSave = onSave;
     }
     //public abstract string GetAuthCode();
-    public virtual async Task<string> GetAuthCode()
+    public virtual async Task<string> GetAuthCode(CancellationToken cancelToken)
     {
       throw new System.NotImplementedException();
     }

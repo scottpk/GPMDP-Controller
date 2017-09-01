@@ -137,13 +137,30 @@ namespace GPMDP_Controller
       }
     }
 
-    public override async Task<int> GetNumbers()
+    public override async Task<int> GetNumbers(CancellationToken cancelToken)
     {
-      return await Task<int>.Run(() => { return GetNumbersNonAsync(); });
+      return await Task<int>.Run(() => { return GetNumbersNonAsync(cancelToken); });
     }
 
-    private int GetNumbersNonAsync()
+    private int GetNumbersNonAsync(CancellationToken cancelToken)
     {
+      System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
+      {
+        Width = 500,
+        Height = 400,
+        FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog,
+        Text = "Please enter your code",
+        StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen,
+        Icon = GPMDPControllerResources.Icon1
+      };
+      System.Windows.Forms.Label nextNumberLabel = new System.Windows.Forms.Label() { Left = 50, Top = 20, Height = 200, Width = 400, TextAlign = System.Drawing.ContentAlignment.MiddleCenter, Text = "X", Font = new System.Drawing.Font(System.Drawing.FontFamily.GenericSansSerif, 24, System.Drawing.FontStyle.Bold)};
+      System.Windows.Forms.Label currentNumberLabel = new System.Windows.Forms.Label() { Left = 50, Top = 200, Height = 200, Width = 400, TextAlign = System.Drawing.ContentAlignment.MiddleCenter, Text = "XXXX", Font = new System.Drawing.Font(System.Drawing.FontFamily.GenericSansSerif, 24, System.Drawing.FontStyle.Bold) };
+      prompt.Controls.Add(nextNumberLabel);
+      prompt.Controls.Add(currentNumberLabel);
+      prompt.Show();
+      prompt.Refresh();
+      
+
       List<double[]> sectionList = new List<double[]>();
       double lastDbl = -(System.Math.PI);
       double sectionSize = System.Math.PI / 2.5;
@@ -168,14 +185,15 @@ namespace GPMDP_Controller
 
       float x = gps.ThumbSticks.Left.X;
       float y = gps.ThumbSticks.Left.Y;
-      while (gps.Triggers.Left < .5f)
+      while ((gps.Triggers.Right < .5f) && (!cancelToken.IsCancellationRequested))
       {
+        cancelToken.ThrowIfCancellationRequested();
         x = gps.ThumbSticks.Left.X;
         y = gps.ThumbSticks.Left.Y;
 
         if (Math.Abs(x) > 0.5f || Math.Abs(y) > 0.5f)
         {
-          double angle = System.Math.Atan2(gps.ThumbSticks.Left.Y, gps.ThumbSticks.Left.X);
+          double leftAngle = System.Math.Atan2(gps.ThumbSticks.Left.Y, gps.ThumbSticks.Left.X);
           //// zone 1 = all the way to the left, slightly up
           //if (angle > )
           int zone = 0;
@@ -184,16 +202,31 @@ namespace GPMDP_Controller
           {
             double sectionLimit1 = sectionArray[i][0];
             double sectionLimit2 = sectionArray[i][1];
-            if (((angle >= sectionLimit1) && (angle <= sectionLimit2)) || ((angle <= sectionLimit1) && (angle >= sectionLimit2)))
+            if (((leftAngle >= sectionLimit1) && (leftAngle <= sectionLimit2)) || ((leftAngle <= sectionLimit1) && (leftAngle >= sectionLimit2)))
             {
               zone = i;
               break;
             }
           }
-          zone = (gps.Triggers.Right < .5f) ? zone + 5 : zone;
+          zone = (gps.Triggers.Left > .5f) ? zone + 5 : zone;
+          nextNumberLabel.Text = zone.ToString();
+          prompt.Refresh();
+          if (gps.ThumbSticks.Right.Y > 0.5f)
+          {
+            val += zone.ToString();
+            currentNumberLabel.Text = val;
+            prompt.Refresh();
+            while (gps.ThumbSticks.Right.Y > 0.5f) {
+              Thread.Sleep(1);
+              gps = GamePad.GetState(playerIndex);
+            }
+          }
         }
+        Thread.Sleep(1);
         gps = GamePad.GetState(playerIndex);
       }
+
+      prompt.Close();
 
       return int.Parse(val);
     }

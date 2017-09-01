@@ -11,6 +11,7 @@ namespace GPMDP_Controller
 {
   partial class ControllerSettingsGUI : Form
   {
+    private delegate void CancelDelegate();
     //private XboxControls xc;
     private bool _messageShown;
     private OnSaveDelegate _onSave;
@@ -18,7 +19,6 @@ namespace GPMDP_Controller
     {
       _onSave = onSave;
       InitializeComponent();
-      //this.xc = xc;
       Dictionary<string, string> vals = new Dictionary<string, string>
       {
         {"PLAY_PAUSE","Play/Pause" },
@@ -57,7 +57,7 @@ namespace GPMDP_Controller
       gpmcNotifyIcon.Visible = true;
     }
 
-    public string GetAuthCode()
+    public string GetAuthCode(CancellationToken cancelToken)
     {
       Form prompt = new Form()
       {
@@ -65,7 +65,8 @@ namespace GPMDP_Controller
         Height = 150,
         FormBorderStyle = FormBorderStyle.FixedDialog,
         Text = "Please enter your code",
-        StartPosition = FormStartPosition.CenterScreen
+        StartPosition = FormStartPosition.CenterScreen,
+        Icon = GPMDPControllerResources.Icon1
       };
       Label textLabel = new Label() { Left = 50, Top = 20, Text = "Put it here" };
       TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 400, };
@@ -77,10 +78,12 @@ namespace GPMDP_Controller
       prompt.Controls.Add(confirmation);
       prompt.Controls.Add(textLabel);
       prompt.AcceptButton = confirmation;
+      CancelDelegate cd = delegate () { prompt.Close(); };
+      cancelToken.Register(()=> { prompt.Invoke(cd); });
 
       int response = 0;
       bool collected = false;
-      while (!collected)
+      while ((!collected) && (!cancelToken.IsCancellationRequested))
       {
         collected = int.TryParse(prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "", out response);
       }
@@ -134,6 +137,7 @@ namespace GPMDP_Controller
   public class ControllerSettings : ControllerUserInterface {
     private ControllerSettingsGUI gui;
     private Thread t;
+    private CancellationTokenSource cts;
     public override bool isRunning { get { return t.IsAlive; } }
     public ControllerSettings(OnSaveDelegate onSave)
       : base(onSave: onSave)
@@ -144,9 +148,9 @@ namespace GPMDP_Controller
       }));
       t.Start();
     }
-    public override async Task<string> GetAuthCode()
+    public override async Task<string> GetAuthCode(CancellationToken cancelToken)
     {
-      return await Task<string>.Run(() => { return gui.GetAuthCode(); });
+      return await Task<string>.Run(() => { return gui.GetAuthCode(cancelToken); });
     }
     public override void Start()
     {

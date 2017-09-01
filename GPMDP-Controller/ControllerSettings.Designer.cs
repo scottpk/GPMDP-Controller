@@ -425,9 +425,8 @@
       this.MaximizeBox = false;
       this.MinimizeBox = false;
       this.Name = "ControllerSettingsGUI";
-      this.ShowInTaskbar = false;
       this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-      this.Text = "ControllerSettingsGUI";
+      this.Text = "Controller Settings";
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ControllerSettings_FormClosing);
       this.gpmcContextMenuStrip.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

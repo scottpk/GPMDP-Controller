@@ -17,7 +17,7 @@ namespace GPMDP_Controller
     public abstract void Pulse();
     public abstract void LoadMappings();
 
-    public virtual async Task<int> GetNumbers()
+    public virtual async Task<int> GetNumbers(CancellationToken cancel)
     {
       throw new System.NotImplementedException();
     }

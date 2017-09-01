@@ -51,8 +51,9 @@ namespace GPMDP_Controller
     private static string GetAuthCode()
     {
       string result = "";
-      Task<int> controllerInputTask = xc.GetNumbers();
-      Task<string> uiInputTask = cs.GetAuthCode();
+      CancellationTokenSource cts = new CancellationTokenSource();
+      Task<int> controllerInputTask = xc.GetNumbers(cts.Token);
+      Task<string> uiInputTask = cs.GetAuthCode(cts.Token);
       while (!controllerInputTask.IsCompleted)
       {
         if (uiInputTask.IsCompleted)
@@ -67,6 +68,7 @@ namespace GPMDP_Controller
       {
         result = controllerInputTask.Result.ToString();
       }
+      cts.Cancel();
       return result;
     }
 
