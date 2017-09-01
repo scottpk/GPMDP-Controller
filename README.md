@@ -1,6 +1,22 @@
 # GPMDP-Controller
 A simple application to control Google Play Music Desktop Player using an Xbox controller.
 This project is currently very, VERY early stages but works using GPMDP's JSON API.
+You should not need to do much configuration to get this running, aside from setting file paths in the app.config.
+
+# Inputting Your Code
+Google Play Music Desktop Player will show a code on-screen when it receives the request to control playback. GPMDP-Controller 
+currently offers two means to input this code:
+- A dialog with a text box - just type it in and click the button
+- Xbox controller input (explained below)
+You should not need this code again once it's entered.
+
+## Using the Xbox Controller to Input Your Code
+This method involves using the left stick and left trigger to modify each individual digit; the right stick to finalize each digit; and the right trigger to submit the code.
+The digits are arranged counterclockwise around the left stick. Starting from the lower left:
+* Without the left trigger held: 0, 1, 2, 3, 4
+* With the left trigger held:    5, 6, 7, 8, 8
+
+To choose that digit, move the right stick up. To submit the code, press the right trigger.
 
 # Setting the Filepath
 You can set the filepath for GPMDP's program files in the settings. The keys to set are as follows:
