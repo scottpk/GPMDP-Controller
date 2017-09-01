@@ -13,7 +13,8 @@ Google Play Music Desktop Player will show a code on-screen when it receives the
 currently offers two means to input this code:
 - A dialog with a text box - just type it in and click the button
 - Xbox controller input (explained below)
-You should not need this code again once it's entered.
+
+GPMDP-Controller only needs this code the first time, after which it will receive a permanent token from GPMDP. You should not need this manual step again unless something happens to cause GPMDP or GPMDP-Controller to lose authentication.
 
 ## Using the Xbox Controller to Input Your Code
 This method involves using the left stick and left trigger to modify each individual digit; the right stick to finalize each digit; and the right trigger to submit the code.
