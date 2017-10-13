@@ -133,6 +133,12 @@ namespace GPMDP_Controller
       {
         ws.SendAsync(new ArraySegment<byte>(encoding.GetBytes(toSend)), WebSocketMessageType.Binary, true, CancellationToken.None);
       }
+      else if (ws.State == WebSocketState.Aborted)
+      {
+        // do not add the overhead of repeating the command, just reconnect and they can try again if they want
+        ws = new ClientWebSocket();
+        Connect();
+      }
     }
 
     public void SendRequest(string ns, string method)

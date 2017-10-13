@@ -104,11 +104,11 @@ namespace GPMDP_Controller
           {
             RStick();
           }
-          if (gps.DPad.Down.Equals(ButtonState.Pressed))
+          if (gps.DPad.Down.Equals(ButtonState.Pressed) && prevState.DPad.Down.Equals(ButtonState.Released))
           {
             DpadDown();
           }
-          if (gps.DPad.Up.Equals(ButtonState.Pressed))
+          if (gps.DPad.Up.Equals(ButtonState.Pressed) && prevState.DPad.Up.Equals(ButtonState.Released))
           {
             DpadUp();
           }
